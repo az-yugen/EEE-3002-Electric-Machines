@@ -57,16 +57,17 @@ class SliderPanel(Panel):
 
         ctk.CTkLabel(self, text = text, font=self.font_label).grid(column = 0, row = 0, sticky = 'W', padx = 20)
 
-        self.num_label = ctk.CTkLabel(self, text = slide_param.get(), font=self.font_num)
-        self.num_label.grid(column = 1, row = 0, sticky = 'E', padx = 30)
-
-        ctk.CTkSlider(self,
+        self.slider = ctk.CTkSlider(self,
                       variable = slide_param,
                       from_ = min_val,
                       to = max_val,
                       number_of_steps= step_num,
                       command = self.update_text
-                      ).grid(row = 1, column = 0, columnspan = 2, padx = 20, pady = 10)
+                      )
+        self.slider.grid(row = 1, column = 0, columnspan = 2, padx = 20, pady = 10)
+
+        self.num_label = ctk.CTkLabel(self, text = self.slider.get(), font=self.font_num)
+        self.num_label.grid(column = 1, row = 0, sticky = 'E', padx = 30)
 
     def update_text(self, value):
             self.num_label.configure(text = f'{round(value, 2)}')

@@ -75,29 +75,37 @@ class App(ctk.CTk):
             'torque_ind': ctk.DoubleVar(value = 0),
         }
 
+        for var in self.param_dict.values():
+            var.trace_add('write', self.update_data)
 
-        self.param_dict['poles'].trace_add('write', self.calc_speed)
-        self.param_dict['freq'].trace_add('write', self.calc_speed)
-
-        self.param_dict['dct_volt'].trace_add('write', self.calc_arm_res)
-        self.param_dict['dct_curr'].trace_add('write', self.calc_arm_res)
-
-        self.param_dict['field_r'].trace_add('write', self.calc_field_curr)
-
-        self.output_dict['occ_phase_volt'].trace_add('write', self.calc_int_imped)
-        self.output_dict['scc_arm_curr'].trace_add('write', self.calc_int_imped)
-
-        self.param_dict['load_s'].trace_add('write', self.calc_out_volt)
-        self.param_dict['load_t'].trace_add('write', self.calc_out_volt)
+        for var in self.output_dict.values():
+            var.trace_add('write', self.update_data)
 
 
-        self.output_dict['arm_res'].trace_add('write', self.calc_out_volt)
-        self.output_dict['sync_react'].trace_add('write', self.calc_out_volt)
-        self.output_dict['occ_phase_volt'].trace_add('write', self.calc_out_volt)
+        # self.param_dict['poles'].trace_add('write', self.calc_speed)
+        # self.param_dict['freq'].trace_add('write', self.calc_speed)
 
-        self.output_dict['arm_curr'].trace_add('write', self.calc_pow_and_tor)
-        self.output_dict['arm_curr_ang'].trace_add('write', self.calc_pow_and_tor)
-        self.output_dict['int_volt_complex'].trace_add('write', self.calc_pow_and_tor)
+        # self.param_dict['dct_volt'].trace_add('write', self.calc_arm_res)
+        # self.param_dict['dct_curr'].trace_add('write', self.calc_arm_res)
+
+        # self.param_dict['field_r'].trace_add('write', self.calc_field_curr)
+        # self.param_dict['field_r'].trace_add('write', self.calc_out_volt)
+
+        # self.output_dict['occ_phase_volt'].trace_add('write', self.calc_int_imped)
+        # self.output_dict['scc_arm_curr'].trace_add('write', self.calc_int_imped)
+
+        # self.param_dict['load_s'].trace_add('write', self.calc_out_volt)
+        # self.param_dict['load_t'].trace_add('write', self.calc_out_volt)
+        # self.output_dict['phase_volt_mag'].trace_add('write', self.calc_field_curr)
+
+
+        # self.output_dict['arm_res'].trace_add('write', self.calc_out_volt)
+        # self.output_dict['sync_react'].trace_add('write', self.calc_out_volt)
+        # self.output_dict['occ_phase_volt'].trace_add('write', self.calc_out_volt)
+
+        # self.output_dict['arm_curr'].trace_add('write', self.calc_pow_and_tor)
+        # self.output_dict['arm_curr_ang'].trace_add('write', self.calc_pow_and_tor)
+        # self.output_dict['int_volt_complex'].trace_add('write', self.calc_pow_and_tor)
 
         self.calc_speed()
         self.calc_arm_res()
@@ -119,7 +127,7 @@ class App(ctk.CTk):
         self.param_dict['load_t'].trace_add('write', self.update_data)
 
         # MENU and PLOTS
-        Menu(self, self.param_dict)
+        Menu(self, self.param_dict, self.output_dict)
         Output(self, self.output_dict)
         self.plot = Plots(self, self.param_dict, self.output_dict, self.power_dict)
 
@@ -134,12 +142,12 @@ class App(ctk.CTk):
     # FUNCTIONS
 
     def update_data(self, *args):
-        # Example logic to update power_dict based on param_dict
-        field_r = self.param_dict['field_r'].get()
-        load_s = self.param_dict['load_s'].get()
-        load_t = self.param_dict['load_t'].get()
-
-        self.power_dict['values'] = [field_r, load_s, load_t]
+        self.calc_speed()
+        self.calc_arm_res()
+        self.calc_field_curr()
+        self.calc_int_imped()
+        self.calc_out_volt()
+        self.calc_pow_and_tor()
 
 
     def calc_speed(self, *args):
@@ -184,7 +192,8 @@ class App(ctk.CTk):
         arm_res = self.output_dict['arm_res'].get()
 
         int_imped = round(occ_phase_volt / scc_arm_curr, 2)
-        sync_react = round(np.sqrt(int_imped**2 - arm_res**2), 2)
+        # sync_react = round(np.sqrt(int_imped**2 - arm_res**2), 2)
+        sync_react = 1.1
 
         # Update output dictionary
         self.output_dict['int_imped'].set(int_imped)
@@ -246,8 +255,9 @@ class App(ctk.CTk):
 
         power_out = round(3 * phase_volt_mag * arm_curr * np.cos(np.radians(arm_curr_ang)), 2)
         power_out_react = round(3 * phase_volt_mag * arm_curr * np.sin(np.radians(arm_curr_ang)), 2)
-        power_conv = round(3 * int_volt_mag * arm_curr * np.cos(np.radians(gamma_ang)), 2)
-        power_conv2 = round((3 * phase_volt_mag * int_volt_mag * np.sin(np.radians(int_ang)))/sync_react, 2)
+        power_conv = round((3 * phase_volt_mag * int_volt_mag * np.sin(np.radians(int_ang)))/sync_react, 2)
+        power_conv2 = round(3 * int_volt_mag * arm_curr * np.cos(np.radians(gamma_ang)), 2)
+
 
         power_loss_cu = round(3 * arm_curr * arm_curr * arm_res, 2)
         power_loss_he = 0

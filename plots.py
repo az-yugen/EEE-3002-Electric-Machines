@@ -23,7 +23,7 @@ class Plots(ctk.CTkTabview):
         # WIDGETS
         CharFrame(self.tab('SCC & OCC'), param_dict, output_dict)
         PhasorFrame(self.tab('Phasor Diagram'), param_dict, output_dict)
-        self.sankey_frame = SankeyFrame(self.tab('Power Flow'), power_dict)  # Assign to self.sankey_frame
+        self.sankey_frame = SankeyFrame(self.tab('Power Flow'), output_dict)  # Assign to self.sankey_frame
 
 
 
@@ -224,32 +224,49 @@ class PhasorFrame(ctk.CTkFrame):
 
 
 class SankeyFrame(ctk.CTkFrame):
-    def __init__(self, parent, power_dict):
+    def __init__(self, parent, output_dict):
         super().__init__(master=parent)
         self.pack(expand=True, fill='both')
 
-        self.power_dict = power_dict  # Store reference to power_dict
+        self.output_dict = output_dict  # Store reference to output_dict
 
         # Create initial Sankey diagram
-        self.create_sankey()
+        # self.create_sankey()
 
         # Add Update Button
         self.update_button = ctk.CTkButton(self, text="Update Sankey", command=self.update_sankey)
         self.update_button.pack(pady=10)
 
     def create_sankey(self):
-        # Extract data from power_dict
-        sources = self.power_dict['sources']
-        targets = self.power_dict['targets']
-        values = self.power_dict['values']
 
-        # Create flows as a list of tuples (source, target, value)
-        flows = [(src, tgt, val) for src, tgt, val in zip(sources, targets, values)]
+        # Extract data from output_dict
+        nodes = [
+            [('Input Power', self.output_dict['power_in'].get())],
+            [('Converted Power', self.output_dict['power_conv'].get()),
+             ('Mechanical Loss', self.output_dict['power_loss_mech'].get()),
+             ('Core Loss',self.output_dict['power_loss_he'].get()),
+             ('Stray Loss', self.output_dict['power_loss_stray'].get())],
+            [('Output Power', self.output_dict['power_out'].get()),
+             ('Copper Loss', self.output_dict['power_loss_cu'].get())],
+        ]
+
+        flows = [
+            ('Input Power', 'Converted Power', self.output_dict['power_conv'].get()),
+            ('Converted Power', 'Output Power', self.output_dict['power_out'].get()),
+            ('Converted Power', 'Copper Loss', self.output_dict['power_loss_cu'].get()),
+            ('Input Power', 'Mechanical Loss', self.output_dict['power_loss_mech'].get()),
+            ('Input Power', 'Core Loss', self.output_dict['power_loss_he'].get()),
+            ('Input Power', 'Stray Loss', self.output_dict['power_loss_stray'].get()),
+        ]
 
         # Create Sankey diagram using SankeyFlow
         fig, ax = plt.subplots(figsize=(8, 6))
-        sankey = Sankey(ax=ax, flows=flows)
-        sankey.draw()
+
+        fig.patch.set_facecolor('#212121')
+        fig.patch.set_alpha(1)
+
+        s = Sankey(flows=flows, nodes=nodes, node_opts=dict(label_format='{label} {value:.2f}W'),)
+        s.draw()
 
         # Embed the Matplotlib figure in Tkinter
         self.canvas = FigureCanvasTkAgg(fig, master=self)
@@ -257,6 +274,7 @@ class SankeyFrame(ctk.CTkFrame):
 
         # Close the Matplotlib figure to free memory
         plt.close(fig)
+
 
     def update_sankey(self):
         # Clear the existing Sankey diagram and redraw it

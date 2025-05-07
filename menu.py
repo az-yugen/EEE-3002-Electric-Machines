@@ -4,7 +4,7 @@ from settings import *
 
 
 class Menu(ctk.CTkTabview):
-    def __init__(self, parent, param_dict):
+    def __init__(self, parent, param_dict, output_dict):
         super().__init__(master = parent)
         self.grid(row = 0, column = 0, sticky = 'NSEW', padx = 10, pady=10)
 
@@ -19,7 +19,7 @@ class Menu(ctk.CTkTabview):
         # WIDGETS
         SpeedFrame(self.tab('Speed'), param_dict)
         DCTFrame(self.tab('DC Test'), param_dict)
-        FnLFrame(self.tab('Field & Load'), param_dict)
+        FnLFrame(self.tab('Field & Load'), param_dict, output_dict)
 
 
 class SpeedFrame(ctk.CTkFrame):
@@ -41,11 +41,12 @@ class DCTFrame(ctk.CTkFrame):
 
 
 class FnLFrame(ctk.CTkFrame):
-    def __init__(self, parent, param_dict):
+    def __init__(self, parent, param_dict, output_dict):
         super().__init__(master = parent)
         self.pack(expand = True, fill = 'both')
 
-        SliderPanel(self, 'Field Resistance', param_dict['field_r'], 20, 200, 200-20)
-        SliderPanel(self, 'Load Amount', param_dict['load_s'], 0, 1000, 100)
-        SliderPanel(self, 'Load Type', param_dict['load_t'], -90, 90, 180)
+        SliderPanel(self, 'Field Resistance', param_dict['field_r'], 20, 200, 10*(200-20))
+        SliderPanel(self, 'Load Amount', param_dict['load_s'], 0, 1000, (1000-0)*4/10)
+        SliderPanel(self, 'Load Type', param_dict['load_t'], -90, 90, 90+90)
+        SliderPanel(self, 'Output Voltage', output_dict['phase_volt_mag'], 0, 5000, 5000)
 
