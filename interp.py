@@ -27,7 +27,7 @@ def interp():
     Interpolates data from a CSV file and returns the interpolated values.
     """
     # Read the CSV file
-    data = read_csv('data_scc1.txt')
+    data = read_csv('data_occ0.txt')
 
     # Convert the data to a NumPy array for easier manipulation
     data_array = np.array(data, dtype=float)
@@ -37,11 +37,11 @@ def interp():
     y_values = data_array[:, 1]
 
     # Perform linear interpolation
-    # x_new = np.round(np.arange(np.min(x_values), np.max(x_values)+0.1, 0.1), decimals=2)
-    x_new = np.round(np.arange(np.min(x_values), 10, 0.1), decimals=2)
+    x_new = np.round(np.arange(np.min(x_values), np.max(x_values)+0.01, 0.01), decimals=3)
+    # x_new = np.round(np.arange(np.min(x_values), 10, 0.1), decimals=2)
     y_new = np.round(np.interp(x_new, x_values, y_values), decimals=3)
 
-    write_csv('data_scc1_interp.txt', np.column_stack((x_new, y_new)))
+    write_csv('data_occ0_interp.txt', np.column_stack((x_new, y_new)))
 
     return x_new, y_new
 
@@ -72,5 +72,5 @@ def exterp():
 
 
 
-# interp()
-exterp()
+interp()
+# exterp()

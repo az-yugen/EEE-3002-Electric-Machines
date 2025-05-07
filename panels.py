@@ -73,6 +73,7 @@ class SliderPanel(Panel):
             self.num_label.configure(text = f'{round(value, 2)}')
 
 
+
 class OutputPanel(Panel):
     def __init__(self, parent, text, data_var):
         super().__init__(parent = parent)

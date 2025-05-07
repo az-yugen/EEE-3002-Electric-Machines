@@ -5,7 +5,7 @@ from settings import *
 class Output(ctk.CTkTabview):
     def __init__(self, parent, output_dict):
         super().__init__(master = parent)
-        self.grid(row = 0, column = 2, sticky = 'NSEW', padx = 10)
+        self.grid(row = 0, column = 2, sticky = 'NSEW', padx = 10, pady=10)
 
         # tabs
         self.add('Output1')
@@ -65,7 +65,7 @@ class OutputFrame3(ctk.CTkFrame):
         OutputPanel(self, 'Output Power', output_dict['power_out'])
         OutputPanel(self, 'Reactive Power', output_dict['power_out_react'])
         OutputPanel(self, 'Converted Power', output_dict['power_conv'])
-        OutputPanel(self, 'Converted Power2', output_dict['power_conv2'])
+        # OutputPanel(self, 'Converted Power2', output_dict['power_conv2'])
         OutputPanel(self, 'Copper Loss', output_dict['power_loss_cu'])
         OutputPanel(self, 'Hysteresis Loss', output_dict['power_loss_he'])
         OutputPanel(self, 'Mechanical Loss', output_dict['power_loss_mech'])
