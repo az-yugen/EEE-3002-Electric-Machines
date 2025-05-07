@@ -1,0 +1,13 @@
+% This is the short-circuit characteristic shown
+% in Figure P5-2b.  The first column is the field 
+% current in amps, and the second column is the
+% short-circuit terminal current in amps.  To use
+% this file in MATLAB, type "load p52_scc.dat".  The
+% data will be loaded into an N x 2 array named
+% "p52_scc", with the first column containing If and 
+% the second column containing the short-circut current.
+% MATLAB function "interp1" can be used to recover
+% a value from this curve.
+     0   60.0000
+1.1300 1128.0000
+1.4690 2199.0000

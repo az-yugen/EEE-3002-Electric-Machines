@@ -1,0 +1,16 @@
+% This is the magnetization curve shown in Figure 
+% P9-5.  The first column is the MMF in ampere turns,
+% and the second column is the internal generated 
+% voltage in volts at a speed of 900 r/min.  To use
+% this file in MATLAB, type "load prob_9_14_mag.dat".  
+% The data will be loaded into an N x 2 array named
+% "prob_9_14_mag", with the first column containing MMF
+% and the second column containing the Ea.
+% MATLAB function "interp1" can be used to recover
+% a value from this curve.
+         500          95
+        1000         150
+        1500         188
+        2000         212
+        2500         229
+        3000         243

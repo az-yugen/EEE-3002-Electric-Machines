@@ -1,0 +1,16 @@
+% This is the magnetization curve shown given in  
+% Problem 9-21.  The first column is the field current in
+% amps, and the second column is the internal 
+% generated voltage in volts at a speed of 1800 r/min.
+% To use this file in MATLAB, type "load prob9_21_mag.dat".  
+% The data will be loaded into an N x 2 array named
+% "prob9_21_mag", with the first column containing If and 
+% the second column containing the open-circuit voltage.
+% MATLAB function "interp1" can be used to recover
+% a value from this curve.
+0.00     8.5
+0.80   150.0
+1.00   180.0
+1.28   215.0
+1.44   226.0
+2.88   242.0

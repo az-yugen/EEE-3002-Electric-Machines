@@ -1,0 +1,37 @@
+% This is the magnetization curve shown in Figure 
+% P9-6.  The first column is the field current in
+% amps, and the second column is the internal 
+% generated voltage in volts at a speed of 1200 r/min.
+% To use this file in MATLAB, type "load p96_mag.dat".  
+% The data will be loaded into an N x 2 array named
+% "p96_mag", with the first column containing If and 
+% the second column containing the open-circuit voltage.
+% MATLAB function "interp1" can be used to recover
+% a value from this curve.
+         0         0
+    0.0500   23.3333
+    0.1000   46.6667
+    0.1500   69.5667
+    0.2000   91.0000
+    0.2500  112.0000
+    0.3000  132.6670
+    0.3500  153.3330
+    0.4000  172.3330
+    0.4500  190.0000
+    0.5000  205.3330
+    0.5500  218.6670
+    0.6000  229.6670
+    0.6500  239.6670
+    0.7000  248.6670
+    0.7500  256.3330
+    0.8000  262.6670
+    0.8500  267.6670
+    0.9000  272.0000
+    0.9500  275.6670
+    1.0000  278.6670
+    1.0500  281.0000
+    1.1000  283.0000
+    1.1500  285.0000
+    1.2000  287.0000
+    1.3000  288.6670
+    1.4000  289.5000

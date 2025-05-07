@@ -1,0 +1,29 @@
+% This is the saturated open-circuit characteristic 
+% shown in Figure P5-2a.  The first column is the field 
+% current in amps, and the second column is the
+% open-circuit terminal voltage in volts.  To use
+% this file in MATLAB, type "load p52_occ.dat".  The
+% data will be loaded into an N x 2 array named
+% "p52_occ", with the first column containing If and 
+% the second column containing the open-circuit voltage.
+% MATLAB function "interp1" can be used to recover
+% a value from this curve.
+     0   124.00
+0.2000   496.00
+0.3000   654.00
+0.3500   720.00
+0.4000   780.00
+0.4500   826.00
+0.5000   860.00
+0.5500   890.00
+0.6000   916.00
+0.6500   940.00
+0.7000   960.00
+0.8000   988.00
+0.9000  1016.00
+1.0000  1036.00
+1.1000  1052.00
+1.2000  1074.00
+1.3000  1086.00
+1.4000  1104.00
+1.5000  1118.00
