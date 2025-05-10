@@ -1,15 +1,9 @@
-import tkinter as tk
-from tkinter import ttk
 import customtkinter as ctk
-
 import numpy as np
-
 from settings import *
 from menu import Menu
 from plots import Plots
 from output import Output
-
-
 
 
 class App(ctk.CTk):
@@ -18,14 +12,14 @@ class App(ctk.CTk):
         # WINDOW SETP
         super().__init__()
         self.title('AC Synchronous Machine')
-        self.minsize(900, 600)
+        self.minsize(APP_SIZE[0], APP_SIZE[1])
 
         # THEME & LAYOUT
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme('dark-blue')
         self.rowconfigure(0, weight = 1, uniform = 'a')
-        self.columnconfigure((0,2), weight = 1, uniform = 'a')
-        self.columnconfigure(1, weight = 2, uniform = 'a')
+        self.columnconfigure((0,2), weight = 5, uniform = 'a')
+        self.columnconfigure(1, weight = 8, uniform = 'a')
 
         # LOAD INITIAL PARAMETERS
         self.init_parameters()
@@ -36,7 +30,7 @@ class App(ctk.CTk):
         Output(self, self.output_dict)
 
         # CLOSE BUTTON
-        self.buttonCloseWindow = ctk.CTkButton(self, text='Close Window', command=self.close_window)
+        self.buttonCloseWindow = ctk.CTkButton(self, text='End Session', command=self.close_window)
         self.buttonCloseWindow.place(relx=0.1, rely=0.9, anchor='sw')
 
 
@@ -51,6 +45,7 @@ class App(ctk.CTk):
 
         # PARAMETER DICTIONARY
         self.param_dict = {
+            'connection': ctk.StringVar(value = OPTIONS_CONN[0]),
             'poles': ctk.DoubleVar(value = OPTIONS_POLES[0]),
             'freq': ctk.DoubleVar(value = OPTIONS_FREQ[0]),
             'dct_volt': ctk.DoubleVar(value = DEFAULT_DCT_V),
@@ -66,10 +61,11 @@ class App(ctk.CTk):
             'sync_rad': ctk.DoubleVar(value = 0),
             'arm_res': ctk.DoubleVar(value = 0.15),
             'field_curr': ctk.DoubleVar(value = 0),
-            'occ_phase_volt': ctk.DoubleVar(value = 1000),
+            'occ_term_volt': ctk.DoubleVar(value = 1000),
             'scc_arm_curr': ctk.DoubleVar(value = 1),
-            'int_imped': ctk.DoubleVar(value = 1),
+            'int_imped_mag': ctk.DoubleVar(value = 1),
             'sync_react': ctk.DoubleVar(value = 1),
+            'line_curr': ctk.DoubleVar(value = 0),
             'arm_curr': ctk.DoubleVar(value = 0),
             'arm_curr_ang': ctk.DoubleVar(value = 0),
             'power_factor': ctk.DoubleVar(value = 0),
@@ -95,6 +91,7 @@ class App(ctk.CTk):
             'torque_ind': ctk.DoubleVar(value = 0),
         }
 
+        # trace add to all variables in param_dict and output_dict made things very laggy
         # for var in self.param_dict.values():
         #     var.trace_add('write', self.update_data)
 
@@ -113,17 +110,17 @@ class App(ctk.CTk):
         self.param_dict['field_r'].trace_add('write', self.calc_field_curr)
         self.param_dict['field_r'].trace_add('write', self.calc_out_volt)
 
-        self.output_dict['occ_phase_volt'].trace_add('write', self.calc_int_imped)
+        self.output_dict['occ_term_volt'].trace_add('write', self.calc_int_imped)
         self.output_dict['scc_arm_curr'].trace_add('write', self.calc_int_imped)
 
         self.param_dict['load_s'].trace_add('write', self.calc_out_volt)
         self.param_dict['load_t'].trace_add('write', self.calc_out_volt)
-        self.output_dict['phase_volt_mag'].trace_add('write', self.calc_field_curr)
+        # self.output_dict['phase_volt_mag'].trace_add('write', self.calc_field_curr)
 
 
         self.output_dict['arm_res'].trace_add('write', self.calc_out_volt)
         self.output_dict['sync_react'].trace_add('write', self.calc_out_volt)
-        self.output_dict['occ_phase_volt'].trace_add('write', self.calc_out_volt)
+        self.output_dict['occ_term_volt'].trace_add('write', self.calc_out_volt)
 
         self.output_dict['arm_curr'].trace_add('write', self.calc_pow_and_tor)
         self.output_dict['arm_curr_ang'].trace_add('write', self.calc_pow_and_tor)
@@ -154,7 +151,6 @@ class App(ctk.CTk):
         sync_speed = round((120 * freq) / poles, 2)
         sync_rad = round((2 * np.pi * sync_speed) / 60, 2)
 
-        # Update output dictionary
         self.output_dict['sync_speed'].set(sync_speed)
         self.output_dict['sync_rad'].set(sync_rad)
 
@@ -166,7 +162,6 @@ class App(ctk.CTk):
 
         arm_res = round(dct_volt / (2*dct_curr), 2)
 
-        # Update output dictionary
         self.output_dict['arm_res'].set(arm_res)
 
 
@@ -177,22 +172,20 @@ class App(ctk.CTk):
 
         field_curr = round(field_volt / field_r, 2)
 
-        # Update output dictionary
         self.output_dict['field_curr'].set(field_curr)
 
 
     def calc_int_imped(self, *args):
         # Calculate internal impedance
-        occ_phase_volt = self.output_dict['occ_phase_volt'].get()
+        occ_term_volt = self.output_dict['occ_term_volt'].get()
         scc_arm_curr = self.output_dict['scc_arm_curr'].get()
         arm_res = self.output_dict['arm_res'].get()
 
-        int_imped = round(occ_phase_volt / scc_arm_curr, 2)
-        # sync_react = round(np.sqrt(int_imped**2 - arm_res**2), 2)
+        int_imped_mag = round(occ_term_volt / scc_arm_curr, 2)
+        # sync_react = round(np.sqrt(int_imped_mag**2 - arm_res**2), 2)
         sync_react = 1.1
 
-        # Update output dictionary
-        self.output_dict['int_imped'].set(int_imped)
+        self.output_dict['int_imped_mag'].set(int_imped_mag)
         self.output_dict['sync_react'].set(sync_react)
 
 
@@ -201,7 +194,9 @@ class App(ctk.CTk):
 
     def calc_out_volt(self, *args):
         # Calculate output voltage
-        arm_curr = self.param_dict['load_s'].get()
+        line_curr = self.param_dict['load_s'].get()
+        self.output_dict['line_curr'].set(line_curr)
+        arm_curr = line_curr
         self.output_dict['arm_curr'].set(arm_curr)
         arm_curr_ang = self.param_dict['load_t'].get()
         self.output_dict['arm_curr_ang'].set(arm_curr_ang)
@@ -209,7 +204,7 @@ class App(ctk.CTk):
         arm_res = self.output_dict['arm_res'].get()
         sync_react = self.output_dict['sync_react'].get()
 
-        int_volt_mag = self.output_dict['occ_phase_volt'].get()
+        int_volt_mag = self.output_dict['occ_term_volt'].get()
         self.output_dict['int_volt_mag'].set(int_volt_mag)
 
         arm_curr_complex = complex(arm_curr * np.cos(np.radians(arm_curr_ang)), arm_curr * np.sin(np.radians(arm_curr_ang)))
@@ -221,15 +216,15 @@ class App(ctk.CTk):
         int_volt_complex = complex(round(int_volt_mag * np.cos(int_ang_rad), 2), round(int_volt_mag * np.sin(int_ang_rad), 2))
 
         phase_volt_complex = int_volt_complex - arm_curr_complex * (arm_res + sync_react_complex)
-        phase_volt_complex = complex(round(phase_volt_complex.real, 2), phase_volt_complex.imag)
+        phase_volt_complex = complex(round(phase_volt_complex.real, 2), round(phase_volt_complex.imag, 2))
         phase_volt_mag = np.abs(phase_volt_complex)
 
-        ter_volt = np.sqrt(3) * phase_volt_mag
+        if self.param_dict['connection'].get() == 'Y':
+            ter_volt = round(np.sqrt(3) * phase_volt_mag, 2)
+        elif self.param_dict['connection'].get() == 'D':
+            ter_volt = round(phase_volt_mag, 2)
 
         volt_reg = round(100 * (int_volt_mag - phase_volt_mag) / phase_volt_mag, 2)
-
-
-        # Update output dictionary
 
         self.output_dict['int_ang'].set(int_ang)
         self.output_dict['int_volt_complex'].set(int_volt_complex)
@@ -271,12 +266,14 @@ class App(ctk.CTk):
 
         power_in = round(power_out + power_loss_tot, 2)
 
-        efficiency = round((power_out / power_in) * 100, 2)
+        if power_in == 0:
+            efficiency = 0
+        else:
+            efficiency = round((power_out / power_in) * 100, 2)
 
         torque_app = round((power_in/sync_speed_rad), 2)
         torque_ind = round((power_conv/sync_speed_rad), 2)
 
-        # Update output dictionary
         self.output_dict['power_out'].set(power_out)
         self.output_dict['power_out_react'].set(power_out_react)
         self.output_dict['power_conv'].set(power_conv)
@@ -312,7 +309,6 @@ class Calculations:
         self.calc_arm_res()
         self.calc_field_curr()
 
-        # Add more calculations as needed
 
 
 if __name__ == '__main__':
@@ -321,14 +317,22 @@ if __name__ == '__main__':
 
 
 
-# add legend to phasor plot     ✔
+
+
+# add legend to phasor plot             ✔
+# plot font and colors                  ✔
+# sankey diagram                        ✔
+# other losses                          ✔
+# add units besides output values       ✔
+# slider labels should be entry instead and typing in it and pressing apply button should update the value in the slider and the output panel   ✔
 # capability curve?
-# other losses                  ✔
-# latex images
-# plot font and colors          ✔
-# sankey diagram                ✔
 # caution when open circuit
 # highlight changes
-# add y-delta option
 # activate generator button etc
 # title and close button
+# add terminal voltage
+# add wye and delta connection option
+# add button for dc test too
+# organize output section
+# add latex symbols to output labels
+# add window icon

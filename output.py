@@ -7,71 +7,88 @@ class Output(ctk.CTkTabview):
         super().__init__(master = parent)
         self.grid(row = 0, column = 2, sticky = 'NSEW', padx = 10, pady=10)
 
-        # tabs
-        self.add('Output1')
-        self.add('Output2')
-        self.add('Output3')
+        # TABS
+        self.add('Speed & DC Test')
+        self.add('OCC & SCC')
+        self.add('Current & Voltage')
+        self.add('Power & Losses')
 
         # WIDGETS
-        OutputFrame1(self.tab('Output1'), output_dict)
-        OutputFrame2(self.tab('Output2'), output_dict)
-        OutputFrame3(self.tab('Output3'), output_dict)
+        FrameSpeednDC(self.tab('Speed & DC Test'), output_dict)
+        FrameOCCnSCC(self.tab('OCC & SCC'), output_dict)
+        FrameCurrnVolt(self.tab('Current & Voltage'), output_dict)
+        FramePownLoss(self.tab('Power & Losses'), output_dict)
 
 
 
-class OutputFrame1(ctk.CTkFrame):
+class FrameSpeednDC(ctk.CTkFrame):
     def __init__(self, parent, output_dict):
         super().__init__(master = parent)
         self.pack(expand = True, fill = 'both')
 
         self.output_dict = output_dict    # Store reference to param_dict
 
-        OutputPanel(self, 'Synchronous Speed', output_dict['sync_speed'])
-        OutputPanel(self, 'Synchronous Angular Speed', output_dict['sync_rad'])
-        OutputPanel(self, 'Armature Resistance', output_dict['arm_res'])
-        OutputPanel(self, 'Field Current', output_dict['field_curr'])
-        OutputPanel(self, 'OCC Phase Voltage', output_dict['occ_phase_volt'])
-        OutputPanel(self, 'SCC Armature Current', output_dict['scc_arm_curr'])
-        OutputPanel(self, 'Internal Impedance', output_dict['int_imped'])
-        OutputPanel(self, 'Synchronous Reactance', output_dict['sync_react'])
+        OutputPanel(self, 'Synchronous Speed', output_dict['sync_speed'], 'rpm')
+        OutputPanel(self, 'Synchronous Angular Speed', output_dict['sync_rad'], 'rad/s')
+        OutputPanel(self, 'Armature Resistance', output_dict['arm_res'], 'Ω')
+        OutputPanel(self, 'Applied Torque', output_dict['torque_app'], 'Nm')
+        OutputPanel(self, 'induced Torque', output_dict['torque_ind'], 'Nm')
 
 
-class OutputFrame2(ctk.CTkFrame):
+
+class FrameOCCnSCC(ctk.CTkFrame):
     def __init__(self, parent, output_dict):
         super().__init__(master = parent)
         self.pack(expand = True, fill = 'both')
 
         self.output_dict = output_dict    # Store reference to param_dict
 
-        OutputPanel(self, 'SCC Armature Current', output_dict['scc_arm_curr'])
-        OutputPanel(self, 'Armature Current', output_dict['arm_curr'])
-        OutputPanel(self, 'Load Angle', output_dict['arm_curr_ang'])
-        OutputPanel(self, 'Internal Angle', output_dict['int_ang'])
-        OutputPanel(self, 'OCC Phase Voltage', output_dict['occ_phase_volt'])
-        OutputPanel(self, 'Internal Voltage', output_dict['int_volt_complex'])
-        OutputPanel(self, 'Phase Voltage', output_dict['phase_volt_complex'])
-        OutputPanel(self, 'Terminal Voltage', output_dict['term_volt'])
-        OutputPanel(self, 'Voltage Regulation', output_dict['volt_reg'])
+        OutputPanel(self, 'Field Current', output_dict['field_curr'], 'A')
+        OutputPanel(self, 'OCC Terminal Voltage', output_dict['occ_term_volt'], 'V')
+        OutputPanel(self, 'SCC Armature Current', output_dict['scc_arm_curr'], 'A')
+        OutputPanel(self, 'Internal Impedance', output_dict['int_imped_mag'], 'Ω')
+        OutputPanel(self, 'Synchronous Reactance', output_dict['sync_react'], 'Ω')
 
 
 
-class OutputFrame3(ctk.CTkFrame):
+
+
+class FrameCurrnVolt(ctk.CTkFrame):
     def __init__(self, parent, output_dict):
         super().__init__(master = parent)
         self.pack(expand = True, fill = 'both')
 
         self.output_dict = output_dict    # Store reference to param_dict
 
-        OutputPanel(self, 'Output Power', output_dict['power_out'])
-        OutputPanel(self, 'Reactive Power', output_dict['power_out_react'])
-        OutputPanel(self, 'Converted Power', output_dict['power_conv'])
+        OutputPanel(self, 'Line Current Magnitude', output_dict['line_curr'], 'A')
+        OutputPanel(self, 'Armature Current Magnitude', output_dict['arm_curr'], 'A')
+        OutputPanel(self, 'Load Angle', output_dict['arm_curr_ang'], '°')
+        OutputPanel(self, 'Internal Angle', output_dict['int_ang'], '°')
+        OutputPanel(self, 'Terminal Angle', output_dict['gamma_ang'], '°')
+        OutputPanel(self, 'Internal Voltage', output_dict['int_volt_complex'], 'V')
+        OutputPanel(self, 'Phase Voltage', output_dict['phase_volt_mag'], 'V')
+        OutputPanel(self, 'Terminal Voltage', output_dict['term_volt'], 'V')
+        OutputPanel(self, 'Voltage Regulation', output_dict['volt_reg'], '')
+
+
+
+class FramePownLoss(ctk.CTkFrame):
+    def __init__(self, parent, output_dict):
+        super().__init__(master = parent)
+        self.pack(expand = True, fill = 'both')
+
+        self.output_dict = output_dict    # Store reference to param_dict
+
+        OutputPanel(self, 'Input Power', output_dict['power_in'], 'W')
+        OutputPanel(self, 'Output Power', output_dict['power_out'], 'W')
+        OutputPanel(self, 'Reactive Power', output_dict['power_out_react'], 'VAR')
+        OutputPanel(self, 'Converted Power', output_dict['power_conv'], 'W')
         # OutputPanel(self, 'Converted Power2', output_dict['power_conv2'])
-        OutputPanel(self, 'Copper Loss', output_dict['power_loss_cu'])
-        OutputPanel(self, 'Hysteresis Loss', output_dict['power_loss_he'])
-        OutputPanel(self, 'Mechanical Loss', output_dict['power_loss_mech'])
-        OutputPanel(self, 'Stray Loss', output_dict['power_loss_stray'])
-        OutputPanel(self, 'Input Power', output_dict['power_in'])
-        OutputPanel(self, 'Efficiency', output_dict['efficiency'])
-        OutputPanel(self, 'Applied Torque', output_dict['torque_app'])
-        OutputPanel(self, 'induced Torque', output_dict['torque_ind'])
+        OutputPanel(self, 'Copper Loss', output_dict['power_loss_cu'], 'W')
+        OutputPanel(self, 'Hysteresis Loss', output_dict['power_loss_he'], 'W')
+        OutputPanel(self, 'Mechanical Loss', output_dict['power_loss_mech'], 'W')
+        OutputPanel(self, 'Stray Loss', output_dict['power_loss_stray'], 'W')
+        OutputPanel(self, 'Efficiency', output_dict['efficiency'], '%')
+
+
 

@@ -4,6 +4,7 @@ from settings import *
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.ticker import EngFormatter
 import numpy as np
 from sankeyflow import Sankey
 from engineering_notation import EngNumber
@@ -14,13 +15,13 @@ import scienceplots
 class Plots(ctk.CTkTabview):
     def __init__(self, parent, param_dict, output_dict):
         super().__init__(master = parent)
-        self.grid(row = 0, column = 1, rowspan=2, sticky = 'NSEW', padx = 10, pady=10)
+        self.grid(row = 0, column = 1, rowspan=2, sticky = 'NSEW', pady=10)
 
         # TABS
         self.add('OCC & SCC')
         self.add('Phasor Diagram')
         self.add('Power Flow')
-        self.add('Capability Curve')
+        # self.add('Capability Curve')
 
         # plt.style.use(['dark_background','science','ieee'])
         plt.style.use('dark_background')
@@ -35,14 +36,14 @@ class Plots(ctk.CTkTabview):
 class CharFrame(ctk.CTkFrame):
     def __init__(self, parent, param_dict, output_dict):
         super().__init__(master = parent)
-        self.pack(expand = True, fill = 'both', pady = 10, padx = 10)
+        self.pack(expand = True, fill = 'both', pady = 5, padx = 5)
 
         self.param_dict = param_dict    # Store reference to param_dict
         self.output_dict = output_dict    # Store reference to param_dict
         self.field_curr = self.output_dict['field_curr'].get()
 
         # Create Matplotlib figure and axes
-        self.fig, self.ax = plt.subplots(2,1, figsize=(8,6))
+        self.fig, self.ax = plt.subplots(2,1, figsize=(6,6))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().pack(expand = True, fill = 'both')
         self.fig.subplots_adjust(left =0.15, right=0.75, top=0.95, hspace=0)
@@ -57,7 +58,6 @@ class CharFrame(ctk.CTkFrame):
         # Initial plot
         self.plot_data()
 
-        # Add trace callback for Load Amount slider
         self.param_dict['field_r'].trace_add('write', self.update_lines)
 
     def load_data(self):
@@ -87,10 +87,14 @@ class CharFrame(ctk.CTkFrame):
             axis.spines[['top', 'right', 'bottom', 'left']].set_visible(False)
             axis.patch.set_facecolor('#212121')
             axis.patch.set_alpha(0)
-            axis.set_xlabel('Field Current (A)')
+
         self.ax[0].set_ylabel('Open Circuit Terminal Voltage (V)')
         self.ax[1].set_ylabel('Short Circuit Armature Current (A)')
+        self.ax[1].set_xlabel('Field Current (A)')
         self.ax[0].xaxis.set_ticklabels([])
+        yaxis_format = EngFormatter(places=0, sep="\N{THIN SPACE}")
+        self.ax[0].yaxis.set_major_formatter(yaxis_format)
+        self.ax[1].yaxis.set_major_formatter(yaxis_format)
         # self.ax[1].yaxis.tick_right()
         # self.ax[1].yaxis.set_label_position("right")
 
@@ -98,7 +102,6 @@ class CharFrame(ctk.CTkFrame):
 
 
     def update_lines(self, *args):
-        # Get the current value of the Load Amount slider
         self.field_curr = self.output_dict['field_curr'].get()
 
         # Find the corresponding y-values for the vertical line
@@ -106,7 +109,7 @@ class CharFrame(ctk.CTkFrame):
         self.scc_y_value = self.get_y_value(self.scc_x, self.scc_y, self.field_curr)
 
         # SET
-        self.output_dict['occ_phase_volt'].set(self.occ_y_value)
+        self.output_dict['occ_term_volt'].set(self.occ_y_value)
         self.output_dict['scc_arm_curr'].set(self.scc_y_value)
 
         # Update or add vertical and horizontal lines to OCC plot
@@ -126,8 +129,9 @@ class CharFrame(ctk.CTkFrame):
             self.scc_hline = self.ax[1].axhline(y=self.scc_y_value, color='lavender', alpha=0.5, linestyle='--', label=f'SCC Y={self.scc_y_value:.2f}')
 
         label_vtoc = '$V_{T, OC}$'
-        self.ax[0].set_title(f'$I_F = ${self.field_curr} A \n\n {label_vtoc} = {self.occ_y_value} V \n', x=1.2, y=0.05, fontsize=14, weight='bold', color='white')
-        self.ax[1].set_title(f'$I_A = ${self.scc_y_value} A \n', x=1.2, y=0.8, fontsize=14, weight='bold', color='white')
+        label_iasc = '$I_{A, SC}$'
+        self.ax[0].set_title(f'{label_vtoc} = {self.occ_y_value} V \n\n $I_F = ${self.field_curr} A', x=1.2, y=0, fontsize=14, weight='bold', color='white')
+        self.ax[1].set_title(f'{label_iasc} = {self.scc_y_value} A \n', x=1.2, y=0.8, fontsize=14, weight='bold', color='white')
 
         # Redraw the canvas
         self.canvas.draw()
@@ -157,13 +161,13 @@ class CharFrame(ctk.CTkFrame):
 class PhasorFrame(ctk.CTkFrame):
     def __init__(self, parent, param_dict, output_dict):
         super().__init__(master = parent)
-        self.pack(expand = True, fill = 'both', pady = 10, padx = 10)
+        self.pack(expand = True, fill = 'both', pady = 5, padx = 5)
 
         self.param_dict = param_dict  # Store reference to param_dict
         self.output_dict = output_dict  # Store reference to param_dict
 
         # --- Matplotlib Figure ---
-        fig, self.ax = plt.subplots(figsize=(8,6))
+        fig, self.ax = plt.subplots(figsize=(6,6))
         self.canvas = FigureCanvasTkAgg(fig, master=self)
         canvas_widget = self.canvas.get_tk_widget()
         canvas_widget.pack(expand = True, fill = 'both')
@@ -342,7 +346,7 @@ class SankeyFrame(ctk.CTkFrame):
         ]
 
         # Create Sankey diagram using SankeyFlow
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(6, 6))
         # plt.rcParams.update({'font.size': 8})
         plt.subplots_adjust(left=0.3)
 
