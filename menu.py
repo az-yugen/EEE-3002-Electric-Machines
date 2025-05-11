@@ -45,8 +45,8 @@ class FnLFrame(ctk.CTkFrame):
         super().__init__(master = parent)
         self.pack(expand = True, fill = 'both')
 
-        SliderPanel2(self, 'Field Resistance', param_dict['field_r'], 20, 200, 100*(200-20), 'Ω')
-        SliderPanel2(self, 'Load Amount', param_dict['load_s'], 0, 1000, (1000-0)*4/10, 'kVA')
-        SliderPanel2(self, 'Load Type', param_dict['load_t'], -90, 90, 90+90, '°')
+        SliderPanel2(self, 'Field Resistance', param_dict['field_r'], 10, 150, 1000*(150-10), 'Ω')
+        SliderPanel2(self, 'Load Amount', param_dict['load_s'], 0, 600, (600-0)*10, '')
+        SliderPanel2(self, 'Load Type', param_dict['load_t'], -90, 90, (90+90)*10, '°')
         # SliderPanel2(self, 'Output Voltage', output_dict['phase_volt_mag'], 0, 5000, 5000, 'V')
 

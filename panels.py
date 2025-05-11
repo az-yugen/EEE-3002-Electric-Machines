@@ -136,6 +136,7 @@ class SliderPanel2(Panel):
         if num.isdigit(): # Checks if it is an integer
         # if num in '-0123456789.': # Checks if it is an integer
             num = float(num)
+            num = round(num, 2) # Round to 2 decimal places
             if num > self.max_val:
                 num = self.max_val
             elif num < self.min_val:

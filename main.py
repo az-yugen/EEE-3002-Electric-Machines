@@ -59,12 +59,15 @@ class App(ctk.CTk):
         self.output_dict = {
             'sync_speed': ctk.DoubleVar(value = 0),
             'sync_rad': ctk.DoubleVar(value = 0),
-            'arm_res': ctk.DoubleVar(value = 0.15),
+            'arm_res': ctk.DoubleVar(value = 0.016),
             'field_curr': ctk.DoubleVar(value = 0),
-            'occ_term_volt': ctk.DoubleVar(value = 1000),
+            'occ_term_volt': ctk.DoubleVar(value = 10),
+            'occ_ag_term_volt': ctk.DoubleVar(value = 10),
             'scc_arm_curr': ctk.DoubleVar(value = 1),
             'int_imped_mag': ctk.DoubleVar(value = 1),
-            'sync_react': ctk.DoubleVar(value = 1),
+            'sync_react': ctk.DoubleVar(value = 0.899),
+            'sync_react_sat': ctk.DoubleVar(value = 1),
+            'sync_react_unsat': ctk.DoubleVar(value = 0.899),
             'line_curr': ctk.DoubleVar(value = 0),
             'arm_curr': ctk.DoubleVar(value = 0),
             'arm_curr_ang': ctk.DoubleVar(value = 0),
@@ -115,11 +118,12 @@ class App(ctk.CTk):
 
         self.param_dict['load_s'].trace_add('write', self.calc_out_volt)
         self.param_dict['load_t'].trace_add('write', self.calc_out_volt)
-        # self.output_dict['phase_volt_mag'].trace_add('write', self.calc_field_curr)
+        self.output_dict['phase_volt_mag'].trace_add('write', self.calc_out_volt)
 
 
         self.output_dict['arm_res'].trace_add('write', self.calc_out_volt)
-        self.output_dict['sync_react'].trace_add('write', self.calc_out_volt)
+        self.output_dict['sync_react_sat'].trace_add('write', self.calc_out_volt)
+        self.output_dict['sync_react_unsat'].trace_add('write', self.calc_out_volt)
         self.output_dict['occ_term_volt'].trace_add('write', self.calc_out_volt)
 
         self.output_dict['arm_curr'].trace_add('write', self.calc_pow_and_tor)
@@ -160,7 +164,7 @@ class App(ctk.CTk):
         dct_volt = self.param_dict['dct_volt'].get()
         dct_curr = self.param_dict['dct_curr'].get()
 
-        arm_res = round(dct_volt / (2*dct_curr), 2)
+        arm_res = round(dct_volt / (2*dct_curr), 4)
 
         self.output_dict['arm_res'].set(arm_res)
 
@@ -178,15 +182,18 @@ class App(ctk.CTk):
     def calc_int_imped(self, *args):
         # Calculate internal impedance
         occ_term_volt = self.output_dict['occ_term_volt'].get()
+        occ_ag_term_volt = self.output_dict['occ_ag_term_volt'].get()
         scc_arm_curr = self.output_dict['scc_arm_curr'].get()
         arm_res = self.output_dict['arm_res'].get()
 
-        int_imped_mag = round(occ_term_volt / scc_arm_curr, 2)
-        # sync_react = round(np.sqrt(int_imped_mag**2 - arm_res**2), 2)
-        sync_react = 1.1
+        int_imped_mag = round(occ_term_volt / (np.sqrt(3) * scc_arm_curr), 2)
+        sync_react_sat = round(np.sqrt(int_imped_mag**2 - arm_res**2), 2)
+        sync_react_unsat = round(occ_ag_term_volt / (np.sqrt(3) * scc_arm_curr), 2)
+        # sync_react_unsat = 0.899
 
         self.output_dict['int_imped_mag'].set(int_imped_mag)
-        self.output_dict['sync_react'].set(sync_react)
+        self.output_dict['sync_react_sat'].set(sync_react_sat)
+        self.output_dict['sync_react_unsat'].set(sync_react_unsat)
 
 
     # FUNCTION - CALCULATE OUTPUT VOLTAGE
@@ -202,14 +209,19 @@ class App(ctk.CTk):
         self.output_dict['arm_curr_ang'].set(arm_curr_ang)
 
         arm_res = self.output_dict['arm_res'].get()
-        sync_react = self.output_dict['sync_react'].get()
+        sync_react_sat = self.output_dict['sync_react_sat'].get()
 
-        int_volt_mag = self.output_dict['occ_term_volt'].get()
+        occ_term_volt = self.output_dict['occ_term_volt'].get()
+        int_volt_mag = round(occ_term_volt / np.sqrt(3), 2)
         self.output_dict['int_volt_mag'].set(int_volt_mag)
 
         arm_curr_complex = complex(arm_curr * np.cos(np.radians(arm_curr_ang)), arm_curr * np.sin(np.radians(arm_curr_ang)))
-        sync_react_complex = complex(0, sync_react)
+        sync_react_complex = complex(0, sync_react_sat)
 
+        # print(sync_react_sat)
+        # print(sync_react_complex)
+        # print(arm_curr_complex)
+        # print(int_volt_mag)
         int_ang_rad = np.arcsin( (arm_curr_complex * (arm_res + sync_react_complex)).imag / int_volt_mag )
         int_ang = round(np.degrees(int_ang_rad), 2)
 
@@ -220,9 +232,9 @@ class App(ctk.CTk):
         phase_volt_mag = np.abs(phase_volt_complex)
 
         if self.param_dict['connection'].get() == 'Y':
-            ter_volt = round(np.sqrt(3) * phase_volt_mag, 2)
+            term_volt = round(np.sqrt(3) * phase_volt_mag, 2)
         elif self.param_dict['connection'].get() == 'D':
-            ter_volt = round(phase_volt_mag, 2)
+            term_volt = round(phase_volt_mag, 2)
 
         volt_reg = round(100 * (int_volt_mag - phase_volt_mag) / phase_volt_mag, 2)
 
@@ -230,7 +242,7 @@ class App(ctk.CTk):
         self.output_dict['int_volt_complex'].set(int_volt_complex)
         self.output_dict['phase_volt_complex'].set(phase_volt_complex)
         self.output_dict['phase_volt_mag'].set(phase_volt_mag)
-        self.output_dict['term_volt'].set(ter_volt)
+        self.output_dict['term_volt'].set(term_volt)
         self.output_dict['volt_reg'].set(volt_reg)
 
 
@@ -248,14 +260,14 @@ class App(ctk.CTk):
         int_volt_mag = self.output_dict['int_volt_mag'].get()
         phase_volt_mag = self.output_dict['phase_volt_mag'].get()
         arm_res = self.output_dict['arm_res'].get()
-        sync_react = self.output_dict['sync_react'].get()
+        sync_react_sat = self.output_dict['sync_react_sat'].get()
         sync_speed_rad = self.output_dict['sync_rad'].get()
 
-        gamma_ang = round(arm_curr_ang + int_ang, 2)
+        gamma_ang = round(int_ang - arm_curr_ang, 2)
 
         power_out = round(3 * phase_volt_mag * arm_curr * np.cos(np.radians(arm_curr_ang)), 2)
         power_out_react = round(3 * phase_volt_mag * arm_curr * np.sin(np.radians(arm_curr_ang)), 2)
-        power_conv = round((3 * phase_volt_mag * int_volt_mag * np.sin(np.radians(int_ang)))/sync_react, 2)
+        power_conv = round((3 * phase_volt_mag * int_volt_mag * np.sin(np.radians(int_ang)))/sync_react_sat, 2)
         # power_conv2 = round(3 * int_volt_mag * arm_curr * np.cos(np.radians(gamma_ang)), 2)
 
         power_loss_cu = round(3 * arm_curr * arm_curr * arm_res, 2)

@@ -47,7 +47,8 @@ class FrameOCCnSCC(ctk.CTkFrame):
         OutputPanel(self, 'OCC Terminal Voltage', output_dict['occ_term_volt'], 'V')
         OutputPanel(self, 'SCC Armature Current', output_dict['scc_arm_curr'], 'A')
         OutputPanel(self, 'Internal Impedance', output_dict['int_imped_mag'], 'Ω')
-        OutputPanel(self, 'Synchronous Reactance', output_dict['sync_react'], 'Ω')
+        OutputPanel(self, 'Synchronous Reactance Sat', output_dict['sync_react_sat'], 'Ω')
+        OutputPanel(self, 'Synchronous Reactance Unsat', output_dict['sync_react_unsat'], 'Ω')
 
 
 
@@ -68,7 +69,7 @@ class FrameCurrnVolt(ctk.CTkFrame):
         OutputPanel(self, 'Internal Voltage', output_dict['int_volt_complex'], 'V')
         OutputPanel(self, 'Phase Voltage', output_dict['phase_volt_mag'], 'V')
         OutputPanel(self, 'Terminal Voltage', output_dict['term_volt'], 'V')
-        OutputPanel(self, 'Voltage Regulation', output_dict['volt_reg'], '')
+        OutputPanel(self, 'Voltage Regulation', output_dict['volt_reg'], '%')
 
 
 

@@ -52,7 +52,7 @@ class CharFrame(ctk.CTkFrame):
         plt.suptitle('OCC & SCC\n', x=1.1, y=0.5, fontsize=14, weight='bold', color='white')
 
         # Load data
-        self.occ_x, self.occ_y, self.scc_x, self.scc_y = ([] for i in range(4))
+        self.occ_x, self.occ_y, self.occ_ag_x, self.occ_ag_y, self.scc_x, self.scc_y = ([] for i in range(6))
         self.load_data()
 
         # Initial plot
@@ -62,14 +62,22 @@ class CharFrame(ctk.CTkFrame):
 
     def load_data(self):
         # Load OCC data
-        with open('data/data_occ_interp.txt', 'r') as datafile:
+        with open('data/p52_occ_interp.txt', 'r') as datafile:
             data = csv.reader(datafile, delimiter=',')
             for rows in data:
                 self.occ_x.append(float(rows[0]))
                 self.occ_y.append(float(rows[1]))
 
+        # Load OCC data with airgap line
+        with open('data/p52_ag_occ_interp.txt', 'r') as datafile:
+            data = csv.reader(datafile, delimiter=',')
+            for rows in data:
+                self.occ_ag_x.append(float(rows[0]))
+                self.occ_ag_y.append(float(rows[1]))
+
+
         # Load SCC data
-        with open('data/data_scc_interp.txt', 'r') as datafile:
+        with open('data/p52_scc_interp.txt', 'r') as datafile:
             data = csv.reader(datafile, delimiter=',')
             for rows in data:
                 self.scc_x.append(float(rows[0]))
@@ -77,7 +85,8 @@ class CharFrame(ctk.CTkFrame):
     
 
     def plot_data(self):
-        # Plot OCC and SCC data
+        # Plot OCC, OCC_AG and SCC data
+        self.ax[0].plot(self.occ_ag_x, self.occ_ag_y, label='OCC_AG', color='mediumseagreen', linestyle='--')
         self.ax[0].plot(self.occ_x, self.occ_y, label='OCC', color='dodgerblue')
         self.ax[1].plot(self.scc_x, self.scc_y, label='SCC', color='orangered')
 
@@ -93,10 +102,16 @@ class CharFrame(ctk.CTkFrame):
         self.ax[1].set_xlabel('Field Current (A)')
         self.ax[0].xaxis.set_ticklabels([])
         yaxis_format = EngFormatter(places=0, sep="\N{THIN SPACE}")
-        self.ax[0].yaxis.set_major_formatter(yaxis_format)
-        self.ax[1].yaxis.set_major_formatter(yaxis_format)
+        # self.ax[0].yaxis.set_major_formatter(yaxis_format)
+        # self.ax[1].yaxis.set_major_formatter(yaxis_format)
         # self.ax[1].yaxis.tick_right()
         # self.ax[1].yaxis.set_label_position("right")
+
+        x_min, x_max = min(self.occ_x), max(self.occ_x)
+        y_min, y_max = min(self.occ_y), max(self.occ_y)
+        self.ax[0].set_xlim(x_min, x_max)
+        self.ax[1].set_xlim(x_min, x_max)
+        self.ax[0].set_ylim(y_min, y_max)
 
         self.canvas.draw()
 
@@ -106,10 +121,12 @@ class CharFrame(ctk.CTkFrame):
 
         # Find the corresponding y-values for the vertical line
         self.occ_y_value = self.get_y_value(self.occ_x, self.occ_y, self.field_curr)
+        self.occ_ag_y_value = self.get_y_value(self.occ_ag_x, self.occ_ag_y, self.field_curr)
         self.scc_y_value = self.get_y_value(self.scc_x, self.scc_y, self.field_curr)
 
         # SET
         self.output_dict['occ_term_volt'].set(self.occ_y_value)
+        self.output_dict['occ_ag_term_volt'].set(self.occ_ag_y_value)
         self.output_dict['scc_arm_curr'].set(self.scc_y_value)
 
         # Update or add vertical and horizontal lines to OCC plot
@@ -197,9 +214,8 @@ class PhasorFrame(ctk.CTkFrame):
         int_ang = self.output_dict['int_ang'].get()
         arm_curr_mag = self.output_dict['arm_curr'].get()
         arm_curr_ang = self.output_dict['arm_curr_ang'].get()
-
         arm_res = self.output_dict['arm_res'].get()
-        sync_react = self.output_dict['sync_react'].get()
+        sync_react_sat = self.output_dict['sync_react_sat'].get()
 
         # Compute phasors
         arm_curr_ang_rad = np.deg2rad(arm_curr_ang)
@@ -209,20 +225,22 @@ class PhasorFrame(ctk.CTkFrame):
         int_volt_complex = int_volt_mag * np.exp(1j * int_ang_rad)  # Internal voltage phasor
 
         vec1 = np.array([int_volt_complex.real, int_volt_complex.imag])
-        vec2 = np.array([sync_react * arm_curr_complex.imag, -sync_react * arm_curr_complex.real])
+        vec2 = np.array([sync_react_sat * arm_curr_complex.imag, -sync_react_sat * arm_curr_complex.real])
         vec3 = np.array([-arm_res * arm_curr_complex.real, -arm_res * arm_curr_complex.imag])
         vec4 = vec1 + vec2 + vec3
+        vec5 = np.array([arm_curr_complex.real, arm_curr_complex.imag])
 
         # Origins
         o1 = np.array([0, 0])
         o2 = o1 + vec1
         o3 = o2 + vec2
         o4 = np.array([0, 0])
+        o5 = np.array([0, 0])
 
-        starts = [o1, o2, o3, o4]
-        vectors = [vec1, vec2, vec3, vec4]
-        colors = ['dodgerblue', 'gold', 'orangered', 'mediumseagreen']
-        labels = ['$E_A$', '$jX_SI_A$', '$R_AI_A$', '$V_{\phi}$']
+        starts = [o1, o2, o3, o4, o5]
+        vectors = [vec1, vec2, vec3, vec4, vec5]
+        colors = ['dodgerblue', 'gold', 'orangered', 'mediumseagreen', 'lavender']
+        labels = ['$E_A$', '$jX_SI_A$', '$R_AI_A$', '$V_{\phi}$', '$I_A$']
 
         all_points = []
         # legend_entries = []
@@ -275,14 +293,10 @@ class PhasorFrame(ctk.CTkFrame):
         canvas.draw()
 
 
+
     # --- Callback for Slider Changes ---
     def on_slider_change(self, *args):
         self.draw_phasors()
-
-
-
-
-
 
 
 
